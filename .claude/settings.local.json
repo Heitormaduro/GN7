@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh auth *)",
+      "Bash(git -C \"d:/Projeto_Claude/GN7\" remote add origin https://github.com/Heitormaduro/GN7.git)",
+      "Bash(git -C \"d:/Projeto_Claude/GN7\" push -u origin master)",
+      "Bash(git -C \"d:/Projeto_Claude/GN7\" remote set-url origin git@github.com:Heitormaduro/GN7.git)",
+      "Bash(git -C \"d:/Projeto_Claude/GN7\" status)"
+    ]
+  }
+}

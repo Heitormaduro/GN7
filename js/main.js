@@ -60,16 +60,8 @@
     if (y > scrollThreshold) nav.classList.add('scrolled');
     else nav.classList.remove('scrolled');
 
-    // Hero parallax — sobe e some conforme rola
-    if (heroInner && !reduceMotion && y < window.innerHeight) {
-      const offset = y * 0.25; // movimento mais sutil
-      // fade muito mais suave — CTAs continuam legíveis durante o scroll do hero
-      const fade = Math.max(0.55, 1 - (y / (window.innerHeight * 1.6)));
-      heroInner.style.transform = `translate3d(0, ${offset}px, 0)`;
-      heroInner.style.opacity = fade;
-    } else if (heroInner) {
-      heroInner.style.transform = '';
-      heroInner.style.opacity = '';
+    // Hero parallax desativado — texto fixo ao rolar
+    if (false) {
     }
 
     ticking = false;
@@ -166,6 +158,51 @@
     }, { threshold: 0.5 });
 
     counters.forEach((c) => counterIo.observe(c));
+  }
+
+  /* ---------- Processo cards — entrada sequencial + tilt ---------- */
+  const processoGrid = document.querySelector('.processo-grid');
+  if ('IntersectionObserver' in window && processoGrid) {
+    const passos     = processoGrid.querySelectorAll('.passo');
+    const connectors = processoGrid.querySelectorAll('.passo-connector');
+    let fired = false;
+
+    const processoIo = new IntersectionObserver((entries) => {
+      if (fired) return;
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        fired = true;
+        processoIo.disconnect();
+
+        passos.forEach((passo, i) => {
+          setTimeout(() => {
+            passo.classList.add('in');
+            setTimeout(() => passo.classList.add('glow'), 900);
+            if (connectors[i]) setTimeout(() => connectors[i].classList.add('in'), 280);
+          }, i * 380);
+        });
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -5% 0px' });
+
+    processoIo.observe(processoGrid);
+
+    // Tilt 3D nos cards do processo (igual aos de serviço, mas mais suave)
+    if (!reduceMotion && window.matchMedia('(hover: hover)').matches) {
+      passos.forEach((card) => {
+        card.addEventListener('mousemove', (e) => {
+          if (!card.classList.contains('in')) return;
+          const rect = card.getBoundingClientRect();
+          const px = (e.clientX - rect.left) / rect.width  - 0.5;
+          const py = (e.clientY - rect.top)  / rect.height - 0.5;
+          card.style.transition = 'transform .12s ease-out';
+          card.style.transform  = `perspective(800px) rotateY(${px * 8}deg) rotateX(${-py * 8}deg) translateZ(16px)`;
+        });
+        card.addEventListener('mouseleave', () => {
+          card.style.transition = 'transform .6s var(--ease-premium, cubic-bezier(0.16,1,0.3,1))';
+          card.style.transform  = '';
+        });
+      });
+    }
   }
 
   /* ---------- Active section detection ---------- */
@@ -268,7 +305,7 @@
     const dist = targetY - startY;
     if (Math.abs(dist) < 2) return;
     const startTime = performance.now();
-    const ease = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    const ease = (t) => t === 0 ? 0 : t === 1 ? 1 : t < 0.5 ? Math.pow(2, 20 * t - 10) / 2 : (2 - Math.pow(2, -20 * t + 10)) / 2;
     const tick = (now) => {
       const progress = Math.min((now - startTime) / duration, 1);
       window.scrollTo(0, startY + dist * ease(progress));
@@ -286,9 +323,124 @@
       e.preventDefault();
       const navH = document.getElementById('nav')?.offsetHeight ?? 80;
       const targetY = target.getBoundingClientRect().top + window.scrollY - navH;
-      smoothScroll(targetY, 900);
+      smoothScroll(targetY, 1400);
     });
   });
+
+  /* ---------- Service modals ---------- */
+  const WA = 'https://wa.me/5533988903303?text=Ol%C3%A1%2C%20quero%20faturar%20mais%20com%20o%20digital%21';
+
+  const GN7_SERVICES = [
+    {
+      num: '01', title: 'Sites com IA',
+      tagline: 'Presença digital que converte — entregue em dias.',
+      desc: 'Criamos o site da sua empresa do zero usando IA para acelerar, mas com identidade 100% única do seu negócio. SEO, mobile, formulário e analytics já inclusos. Você aprova cada detalhe antes de ir ao ar.',
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 8h18"/><path d="M7 13h4"/></svg>`,
+      steps: [
+        { n:'01', label:'Briefing',          desc:'30 min de conversa. Entendemos seu público, posicionamento e o que você quer transmitir.' },
+        { n:'02', label:'Design premium',     desc:'Layout aprovado por você antes de virar código — no estilo da sua marca.' },
+        { n:'03', label:'Desenvolvimento',    desc:'Site construído, testado em mobile e desktop, indexado corretamente no Google.' },
+        { n:'04', label:'Entrega + ajustes',  desc:'No ar em até 5 dias úteis. Rodada de ajustes incluída sem custo extra.' },
+      ],
+      chips: ['SEO técnico','Mobile-first','Google Analytics','Formulário integrado','Domínio & hospedagem'],
+      cta:  'Quero meu site',
+    },
+    {
+      num: '02', title: 'Criativos automáticos',
+      tagline: 'Conteúdo que soa como você — sem você fazer nada.',
+      desc: 'Posts para Instagram e Facebook gerados com IA treinada na voz e identidade do seu negócio. Semana a semana, sem depender de agência ou freelancer.',
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.5"/><path d="M4 17l4-4 4 4 4-6 4 4"/></svg>`,
+      steps: [
+        { n:'01', label:'Definição de voz',   desc:'A gente aprende o tom da sua marca: formal, descontraído, técnico ou próximo.' },
+        { n:'02', label:'Templates da marca',  desc:'Layouts no Canva/IA com suas cores, logo e tipografia — identidade consistente.' },
+        { n:'03', label:'Geração semanal',     desc:'7 a 12 posts por semana prontos para publicar, com legendas e hashtags.' },
+        { n:'04', label:'Aprovação fácil',     desc:'Você aprova ou ajusta direto pelo WhatsApp — sem reuniões, sem demora.' },
+      ],
+      chips: ['Instagram','Facebook','Stories','Legendas + hashtags','Identidade visual'],
+      cta:  'Quero meus criativos',
+    },
+    {
+      num: '03', title: 'Análise de KPIs',
+      tagline: 'Saiba o que está funcionando antes de gastar mais.',
+      desc: 'Conectamos sua conta no Meta Ads e entregamos relatórios automáticos direto no seu WhatsApp. Você lê em 2 minutos e já sabe exatamente o que otimizar.',
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg>`,
+      steps: [
+        { n:'01', label:'Integração',         desc:'Conectamos com o Meta Ads em menos de 15 minutos — sem complicação técnica.' },
+        { n:'02', label:'Dashboard',           desc:'Painel visual com as métricas que realmente importam para o seu objetivo.' },
+        { n:'03', label:'Alertas automáticos', desc:'Notificação no WhatsApp quando um anúncio performa bem ou mal — em tempo real.' },
+        { n:'04', label:'Relatório mensal',    desc:'Resumo completo com insights e sugestões de otimização para o próximo mês.' },
+      ],
+      chips: ['Meta Ads','CPC & CTR','ROAS','Custo por lead','Alertas WhatsApp'],
+      cta:  'Quero minha análise',
+    },
+    {
+      num: '04', title: 'Automação personalizada',
+      tagline: 'Pare de fazer na mão o que a IA pode fazer por você.',
+      desc: 'Mapeamos os processos repetitivos do seu negócio e automatizamos usando as melhores ferramentas. Você libera horas toda semana sem precisar mudar como trabalha.',
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/></svg>`,
+      steps: [
+        { n:'01', label:'Mapeamento',          desc:'Identificamos o processo que mais consome tempo e tem mais a ganhar com automação.' },
+        { n:'02', label:'Proposta',             desc:'Mostramos exatamente como vai funcionar antes de escrever uma linha de código.' },
+        { n:'03', label:'Implementação',        desc:'Construímos o fluxo usando n8n, Make ou a ferramenta ideal para o seu caso.' },
+        { n:'04', label:'Entrega + treinamento',desc:'Você recebe funcionando e entende o que acontece — sem caixa-preta.' },
+      ],
+      chips: ['n8n','Make / Zapier','WhatsApp API','Planilhas','CRM integrado'],
+      cta:  'Quero minha automação',
+    },
+  ];
+
+  const overlay   = document.getElementById('modalOverlay');
+  const card      = document.getElementById('modalCard');
+  const btnClose  = document.getElementById('modalClose');
+
+  function openModal(idx) {
+    const s = GN7_SERVICES[idx];
+    if (!s) return;
+
+    document.getElementById('modalIcon').innerHTML    = s.icon;
+    document.getElementById('modalNum').textContent   = s.num;
+    document.getElementById('modalTitle').textContent = s.title;
+    document.getElementById('modalTagline').textContent = s.tagline;
+    document.getElementById('modalDesc').textContent  = s.desc;
+
+    document.getElementById('modalSteps').innerHTML = s.steps.map(st => `
+      <div class="modal-step">
+        <div class="modal-step-num">${st.n}</div>
+        <div class="modal-step-label">${st.label}</div>
+        <div class="modal-step-desc">${st.desc}</div>
+      </div>`).join('');
+
+    document.getElementById('modalChips').innerHTML = s.chips.map(c =>
+      `<span class="modal-chip">${c}</span>`).join('');
+
+    const ctaEl = document.getElementById('modalCta');
+    ctaEl.href = WA;
+    document.getElementById('modalCtaText').textContent = s.cta;
+
+    card.scrollTop = 0;
+    overlay.setAttribute('aria-hidden', 'false');
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    if (!overlay.classList.contains('open')) return;
+    overlay.classList.add('closing');
+    setTimeout(() => {
+      overlay.classList.remove('open', 'closing');
+      overlay.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }, 320);
+  }
+
+  document.querySelectorAll('.servico[data-service]').forEach(el => {
+    el.addEventListener('click', () => openModal(Number(el.dataset.service)));
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModal(Number(el.dataset.service)); } });
+  });
+
+  overlay.addEventListener('click', e => { if (e.target === overlay || e.target === overlay.querySelector('.modal-scene')) closeModal(); });
+  btnClose.addEventListener('click', closeModal);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && overlay.classList.contains('open')) closeModal(); });
 
   /* ---------- Console signature ---------- */
   console.log(

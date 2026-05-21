@@ -14,10 +14,16 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/style.css?v=53">
+  <link rel="stylesheet" href="css/style.css?v=60">
 </head>
 <body>
-  <div class="grain" aria-hidden="true"></div>
+
+  <!-- ============ INTRO OVERLAY ============ -->
+  <div id="introOverlay" class="intro-overlay" aria-hidden="true">
+    <canvas id="introCanvas"></canvas>
+  </div>
+
+<div class="grain" aria-hidden="true"></div>
   <div class="ambient" aria-hidden="true"></div>
 
   <nav class="nav" id="nav">
@@ -44,7 +50,7 @@
     <div class="hero-light-blue" aria-hidden="true"></div>
     <div class="hero-light-amber" aria-hidden="true"></div>
     <div class="hero-robot-wrap" aria-hidden="true">
-      <img class="hero-robot" src="img/RobôOFC.png" alt="">
+      <img class="hero-robot" src="img/Rob%C3%B4OFC.png" alt="Robô GN7">
       <div class="hero-robot-halo"></div>
     </div>
     <div class="container hero-inner">
@@ -95,7 +101,7 @@
       </div>
 
       <div class="servicos-grid">
-        <article class="servico" data-reveal="left" style="--d:0ms">
+        <article class="servico" data-reveal="left" style="--d:0ms" data-service="0" role="button" tabindex="0">
           <div class="servico-top">
             <span class="servico-num">01</span>
             <div class="servico-icon" aria-hidden="true">
@@ -111,7 +117,7 @@
           <span class="servico-arrow" aria-hidden="true">→</span>
         </article>
 
-        <article class="servico" data-reveal="scale" style="--d:80ms">
+        <article class="servico" data-reveal="scale" style="--d:80ms" data-service="1" role="button" tabindex="0">
           <div class="servico-top">
             <span class="servico-num">02</span>
             <div class="servico-icon" aria-hidden="true">
@@ -127,7 +133,7 @@
           <span class="servico-arrow" aria-hidden="true">→</span>
         </article>
 
-        <article class="servico" data-reveal="right" style="--d:160ms">
+        <article class="servico" data-reveal="right" style="--d:160ms" data-service="2" role="button" tabindex="0">
           <div class="servico-top">
             <span class="servico-num">03</span>
             <div class="servico-icon" aria-hidden="true">
@@ -144,7 +150,7 @@
           <span class="servico-arrow" aria-hidden="true">→</span>
         </article>
 
-        <article class="servico" data-reveal="scale" style="--d:240ms">
+        <article class="servico" data-reveal="scale" style="--d:240ms" data-service="3" role="button" tabindex="0">
           <div class="servico-top">
             <span class="servico-num">04</span>
             <div class="servico-icon" aria-hidden="true">
@@ -158,6 +164,64 @@
           <p>Fluxo repetitivo que toma seu tempo? A gente mapeia, projeta a automação e implementa. Você vê o resultado, não a engrenagem.</p>
           <span class="servico-arrow" aria-hidden="true">→</span>
         </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ COMO FUNCIONA ============ -->
+  <section class="processo" id="processo" aria-labelledby="processo-title">
+    <div class="container">
+      <div class="section-head" data-reveal>
+        <span class="section-tag">Como funciona</span>
+        <h2 id="processo-title" class="section-title">
+          Do diagnóstico ao resultado.<br>
+          <em>Simples assim.</em>
+        </h2>
+      </div>
+
+      <div class="processo-grid">
+
+        <article class="passo" data-num="01">
+          <div class="passo-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+          </div>
+          <span class="passo-num">01</span>
+          <h3 class="passo-title">Diagnóstico</h3>
+          <p class="passo-desc">Você explica o problema. A gente mapeia o que automatizar e o que faz sentido pro seu momento — sem proposta genérica, sem enrolação.</p>
+          <span class="passo-badge">Grátis · sem compromisso</span>
+        </article>
+
+        <div class="passo-connector" aria-hidden="true"></div>
+
+        <article class="passo" data-num="02">
+          <div class="passo-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+            </svg>
+          </div>
+          <span class="passo-num">02</span>
+          <h3 class="passo-title">Implementação</h3>
+          <p class="passo-desc">A gente constrói, testa e sobe. Você acompanha, aprova e recebe funcionando — sem virar técnico ou apertar um botão.</p>
+          <span class="passo-badge">Dias · não meses</span>
+        </article>
+
+        <div class="passo-connector" aria-hidden="true"></div>
+
+        <article class="passo" data-num="03">
+          <div class="passo-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+              <polyline points="16 7 22 7 22 13"/>
+            </svg>
+          </div>
+          <span class="passo-num">03</span>
+          <h3 class="passo-title">Resultado</h3>
+          <p class="passo-desc">Resultado que aparece nos números. Ajuste fino incluído — sem abrir chamado, sem ficar sem resposta no WhatsApp.</p>
+          <span class="passo-badge">Acompanhamento incluído</span>
+        </article>
+
       </div>
     </div>
   </section>
@@ -314,8 +378,49 @@
     </div>
   </footer>
 
-  <script src="js/main.js?v=16"></script>
+  <!-- ============ MODAIS DE SERVIÇO ============ -->
+  <div class="modal-overlay" id="modalOverlay" aria-hidden="true">
+    <div class="modal-scene">
+      <div class="modal-card" id="modalCard" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <button class="modal-x" id="modalClose" aria-label="Fechar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+
+        <div class="modal-scroll">
+          <div class="modal-hero">
+            <div class="modal-icon-big" id="modalIcon"></div>
+            <div class="modal-hero-text">
+              <span class="modal-num-tag" id="modalNum"></span>
+              <h2 class="modal-title" id="modalTitle"></h2>
+              <p class="modal-tagline" id="modalTagline"></p>
+            </div>
+          </div>
+
+          <p class="modal-desc" id="modalDesc"></p>
+
+          <div class="modal-steps-wrap">
+            <span class="section-tag">Como funciona</span>
+            <div class="modal-steps-grid" id="modalSteps"></div>
+          </div>
+
+          <div class="modal-chips-wrap">
+            <span class="section-tag">O que inclui</span>
+            <div class="modal-chips" id="modalChips"></div>
+          </div>
+
+          <a class="cta-primary modal-cta" id="modalCta" href="https://wa.me/5533988903303?text=Ol%C3%A1%2C%20quero%20faturar%20mais%20com%20o%20digital%21" target="_blank" rel="noopener">
+            <span id="modalCtaText">Quero esse serviço</span>
+            <span class="cta-arrow" aria-hidden="true">→</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script src="js/intro.js?v=8"></script>
+<script src="js/main.js?v=17"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="js/hero-bg.js?v=16"></script>
+  <script src="js/hero-bg.js?v=17"></script>
+
 </body>
 </html>

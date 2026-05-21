@@ -119,8 +119,13 @@
     const { type, idx, t } = st;
     const phrase = PHRASES[idx];
 
-    const bigSz  = Math.min(W * 0.115, H * 0.21, 138);
-    const subSz  = Math.max(14, Math.round(15 * Math.min(W / 1000, 1.3)));
+    // Auto-scale: mede o texto e encolhe se não couber na tela
+    const rawSz = Math.min(W * 0.115, H * 0.21, 138);
+    ctx.font = `900 ${rawSz}px Montserrat, sans-serif`;
+    const measured = ctx.measureText(phrase.big).width;
+    const bigSz  = measured > W * 0.88 ? Math.floor(rawSz * (W * 0.88) / measured) : rawSz;
+
+    const subSz  = Math.max(13, Math.round(15 * Math.min(W / 1000, 1.3)));
     const cx = W / 2, cy = H / 2;
 
     // Variáveis de animação por fase

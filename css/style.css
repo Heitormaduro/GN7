@@ -1982,6 +1982,83 @@ footer {
   .modal-steps-grid { grid-template-columns: 1fr; }
 }
 
+/* ============ MOBILE GLOBAL FIXES ============ */
+
+/* Robô: some em telas pequenas, fica bem discreto em tablets */
+@media (max-width: 600px) {
+  .hero-robot-wrap { display: none; }
+}
+@media (min-width: 601px) and (max-width: 900px) {
+  .hero-robot-wrap {
+    height: 42%;
+    top: auto;
+    bottom: 0;
+    opacity: 0.18;
+    pointer-events: none;
+  }
+}
+
+/* Hero: respiro menor em telas pequenas */
+@media (max-width: 480px) {
+  .hero { padding: 5.5rem 0 2rem; }
+  .hero-title { margin-bottom: 1.1rem; }
+  .hero-sub { margin-bottom: 1.75rem; font-size: 0.97rem; }
+  .hero-actions { margin-bottom: 2rem; }
+  .hero-divider { margin-bottom: 1.5rem; }
+}
+
+/* Nav: não deixa o botão encolher demais em telas muito estreitas */
+@media (max-width: 360px) {
+  .nav-inner { padding: 0.45rem 0.45rem 0.45rem 1rem; }
+  .nav-inner .cta-nav { padding: 0.5rem 0.7rem; font-size: 0.78rem; }
+  .logo-img { width: 48px; height: 30px; }
+}
+
+/* Serviços e passos: padding interno menor no mobile */
+@media (max-width: 480px) {
+  .servico { padding: 1.75rem 1.5rem 1.5rem; min-height: auto; }
+  .passo   { padding: 1.75rem 1.5rem 1.5rem; }
+}
+
+/* Section-head: menos espaço embaixo no mobile */
+@media (max-width: 768px) {
+  .section-head { margin-bottom: 2.5rem; }
+}
+
+/* FAQ: desabilita scale no mobile pra não causar overflow lateral */
+@media (max-width: 768px) {
+  .faq-item[open] { scale: 1; }
+  .faq-item summary { padding: 1.35rem 0.25rem; }
+}
+
+/* Sobre: stats com menos padding */
+@media (max-width: 480px) {
+  .sobre-stats { padding: 1.5rem; }
+}
+
+/* Modal: padding interno menor no mobile */
+@media (max-width: 600px) {
+  .modal-scroll {
+    padding: 1.5rem 1.25rem 1.75rem;
+  }
+  .modal-x { top: 0.85rem; right: 0.85rem; }
+  .modal-hero { flex-direction: column; gap: 1rem; padding-right: 2.5rem; }
+  .modal-steps-grid { grid-template-columns: 1fr; }
+  .modal-icon-big { width: 56px; height: 56px; padding: 11px; }
+}
+
+/* CTA final: título escala melhor em mobile */
+@media (max-width: 480px) {
+  .cta-final { padding: 5rem 0; }
+  .cta-final h2 { font-size: clamp(2rem, 9vw, 4.5rem); }
+}
+
+/* Footer: ajuste de espaçamento */
+@media (max-width: 480px) {
+  footer { padding: 3rem 0 2rem; }
+  .footer-inner { gap: 2rem; }
+}
+
 /* ============ INTRO OVERLAY ============ */
 
 body.intro-active .nav-inner {

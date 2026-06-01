@@ -31,7 +31,8 @@
   const easeIn  = t => t ** 3;
   const easeIO  = t => t < .5 ? 4*t**3 : 1 - (-2*t+2)**3/2;
 
-  let canvas, ctx, W, H, overlayEl, raf, startTs;
+  let canvas, ctx, W, H, dpr = 1, overlayEl, raf, startTs;
+  let lastVW = 0, lastVH = 0;
 
   // Pool de partículas do beam
   let sparks = [];
@@ -43,13 +44,26 @@
     ctx       = canvas.getContext('2d');
     resize();
     window.addEventListener('resize', resize);
+    // in-app browsers (Instagram/Facebook) mudam a viewport sem disparar
+    // 'resize' de forma confiável — visualViewport pega esses casos
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', resize);
     startTs = performance.now();
     raf = requestAnimationFrame(tick);
   });
 
+  // Dimensiona o canvas pelo tamanho REAL exibido (não window.innerHeight, que
+  // mente no in-app browser) e multiplica por devicePixelRatio pra ficar nítido
+  // em telas retina. setTransform deixa o resto do código desenhar em px CSS.
   function resize() {
-    W = canvas.width  = window.innerWidth;
-    H = canvas.height = window.innerHeight;
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = canvas.getBoundingClientRect();
+    W = rect.width  || window.innerWidth;
+    H = rect.height || window.innerHeight;
+    canvas.width  = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    lastVW = window.innerWidth;
+    lastVH = window.innerHeight;
   }
 
   // ── Estado: qual frase, qual fase, t 0→1 ─────────────────────────────────
@@ -83,6 +97,8 @@
 
   // ── Loop principal ────────────────────────────────────────────────────────
   function tick(ts) {
+    // re-sincroniza se a viewport mudou (barra do navegador recolhendo etc.)
+    if (window.innerWidth !== lastVW || window.innerHeight !== lastVH) resize();
     const elapsed = ts - startTs;
     const st      = getState(elapsed);
 

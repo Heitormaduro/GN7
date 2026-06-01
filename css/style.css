@@ -64,6 +64,10 @@ summary::-webkit-details-marker { display: none; }
 }
 
 /* ============ BASE ============ */
+/* Contém qualquer overflow horizontal (ex: reveals laterais antes de animar)
+   sem quebrar position:fixed do nav. clip não cria container de rolagem. */
+html { overflow-x: clip; }
+
 body {
   background: var(--navy-deep);
   color: var(--off-white);
@@ -221,6 +225,13 @@ body {
 }
 
 [data-reveal="right"].in { opacity: 1; transform: translateX(0); }
+
+/* No mobile o deslocamento de 140px estoura a largura da tela e cria scroll
+   horizontal (que entortava o nav). Reduz pra um valor que cabe. */
+@media (max-width: 768px) {
+  [data-reveal="left"]  { transform: translateX(-32px); }
+  [data-reveal="right"] { transform: translateX(32px); }
+}
 
 @keyframes pulse {
   0%, 100% { opacity: 1; transform: scale(1); }

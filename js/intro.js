@@ -11,6 +11,24 @@
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   window.scrollTo(0, 0);
 
+  // No celular (inclui o navegador in-app do Instagram/Facebook) a intro em
+  // canvas quebra por causa do conflito de viewport visual vs. layout, além de
+  // atrasar o acesso ao conteúdo. Pulamos a intro e mostramos o site direto.
+  // O overlay também é escondido via CSS (@media) pra não dar flash.
+  if (window.matchMedia('(max-width: 768px)').matches) {
+    const skip = () => {
+      const ov = document.getElementById('introOverlay');
+      if (ov) ov.remove();
+      document.body.classList.remove('intro-active');
+    };
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', skip);
+    } else {
+      skip();
+    }
+    return;
+  }
+
   const PHRASES = [
     { big: 'AUTOMATIZE.',  sub: 'Inteligência que trabalha por você.' },
     { big: 'ESCALE.',       sub: 'Do clique ao resultado real.' },

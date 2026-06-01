@@ -2077,6 +2077,12 @@ body.intro-active .logo-img {
   background: #060f24;
 }
 
+/* No celular a intro é pulada (canvas quebra no in-app browser) — esconde o
+   overlay já no CSS pra não aparecer a tela escura antes do JS rodar */
+@media (max-width: 768px) {
+  .intro-overlay { display: none !important; }
+}
+
 #introCanvas {
   display: block;
   width: 100%;

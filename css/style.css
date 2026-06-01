@@ -164,7 +164,6 @@ body {
   transform: translateY(48px);
   transition: opacity 1.1s var(--ease-premium), transform 1.1s var(--ease-premium);
   transition-delay: var(--d, 0ms);
-  will-change: opacity, transform;
 }
 
 [data-reveal].in {
@@ -182,7 +181,6 @@ body {
     clip-path 1.3s var(--ease-premium),
     transform 1.3s var(--ease-premium);
   transition-delay: var(--d, 0ms);
-  will-change: opacity, transform, clip-path;
 }
 
 [data-reveal="wipe"].in {
@@ -197,7 +195,6 @@ body {
   transform: translateY(40px) scale(.94);
   transition: opacity 1.1s var(--ease-premium), transform 1.1s var(--ease-premium);
   transition-delay: var(--d, 0ms);
-  will-change: opacity, transform;
 }
 
 [data-reveal="scale"].in {
@@ -623,6 +620,9 @@ body {
   justify-content: center;
   animation: robotEnter 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both;
 }
+
+/* picture não gera caixa — img segue como filho direto do flex wrap */
+.hero-robot-wrap picture { display: contents; }
 
 /* Robô PNG — drop-shadow ambiental que ancora ele na cena */
 .hero-robot {

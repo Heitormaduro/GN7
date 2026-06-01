@@ -108,8 +108,8 @@
 
   // ── Scanlines CRT sutis ───────────────────────────────────────────────────
   function drawScanlines() {
+    ctx.fillStyle = 'rgba(0,0,0,0.035)';
     for (let y = 0; y < H; y += 4) {
-      ctx.fillStyle = 'rgba(0,0,0,0.035)';
       ctx.fillRect(0, y, W, 1);
     }
   }

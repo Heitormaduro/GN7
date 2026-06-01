@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/style.css?v=61">
+  <link rel="stylesheet" href="css/style.css?v=62">
 </head>
 <body>
 
@@ -50,7 +50,10 @@
     <div class="hero-light-blue" aria-hidden="true"></div>
     <div class="hero-light-amber" aria-hidden="true"></div>
     <div class="hero-robot-wrap" aria-hidden="true">
-      <img class="hero-robot" src="img/Rob%C3%B4OFC.png" alt="Robô GN7">
+      <picture>
+        <source srcset="img/robo-ofc.webp" type="image/webp">
+        <img class="hero-robot" src="img/Rob%C3%B4OFC.png" alt="Robô GN7" decoding="async" fetchpriority="high" width="1080" height="1920">
+      </picture>
       <div class="hero-robot-halo"></div>
     </div>
     <div class="container hero-inner">
@@ -417,10 +420,10 @@
     </div>
   </div>
 
-<script src="js/intro.js?v=9"></script>
+<script src="js/intro.js?v=10"></script>
 <script src="js/main.js?v=17"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="js/hero-bg.js?v=17"></script>
+  <script src="js/hero-bg.js?v=18"></script>
 
 </body>
 </html>

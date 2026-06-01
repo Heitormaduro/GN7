@@ -1,9 +1,12 @@
 /* ============================================================
-   GN7 — Hero Background v3
+   GN7 — Hero Background v4 (otimizado)
    Rede de partículas conectadas (tech / automação)
    - Nodes dourados drifting em 3D
    - Lines auto-formam entre nodes próximos
    - Cursor atrai nodes + desenha linhas brilhantes ativas
+
+   v4: buffers pré-alocados (zero alocação por frame), loop pausa
+   quando o hero sai de vista ou a aba fica oculta.
    ============================================================ */
 
 (() => {
@@ -31,7 +34,8 @@
   const renderer = new THREE.WebGLRenderer({
     canvas,
     alpha: true,
-    antialias: true
+    antialias: true,
+    powerPreference: 'high-performance'
   });
   renderer.setClearColor(0x000000, 0);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -75,8 +79,16 @@
   const points = new THREE.Points(pointsGeo, pointsMat);
   scene.add(points);
 
-  /* ---------- Passive lines (entre nodes próximos) ---------- */
+  /* ---------- Passive lines (entre nodes próximos) ----------
+     Buffer pré-alocado pro pior caso (todos os pares conectados).
+     A cada frame só atualizamos os valores + setDrawRange — sem
+     recriar geometria nem alocar arrays. */
+  const MAX_PAIRS = (NODE_COUNT * (NODE_COUNT - 1)) / 2;
+  const linePositions = new Float32Array(MAX_PAIRS * 6); // 2 vértices * 3 coords por par
   const linesGeo = new THREE.BufferGeometry();
+  const lineAttr = new THREE.BufferAttribute(linePositions, 3);
+  lineAttr.setUsage(THREE.DynamicDrawUsage);
+  linesGeo.setAttribute('position', lineAttr);
   const linesMat = new THREE.LineBasicMaterial({
     color: 0xc4a050,
     transparent: true,
@@ -84,10 +96,16 @@
     depthWrite: false
   });
   const lines = new THREE.LineSegments(linesGeo, linesMat);
+  lines.frustumCulled = false;
   scene.add(lines);
 
   /* ---------- Active lines (cursor → nodes próximos) ---------- */
+  const MAX_ACTIVE_LINES = 8;
+  const activeLinePositions = new Float32Array(MAX_ACTIVE_LINES * 6);
   const activeLinesGeo = new THREE.BufferGeometry();
+  const activeAttr = new THREE.BufferAttribute(activeLinePositions, 3);
+  activeAttr.setUsage(THREE.DynamicDrawUsage);
+  activeLinesGeo.setAttribute('position', activeAttr);
   const activeLinesMat = new THREE.LineBasicMaterial({
     color: 0xe8d4a4,
     transparent: true,
@@ -96,10 +114,16 @@
     blending: THREE.AdditiveBlending
   });
   const activeLines = new THREE.LineSegments(activeLinesGeo, activeLinesMat);
+  activeLines.frustumCulled = false;
   scene.add(activeLines);
 
+  /* ---------- Buffer reutilizável pra seleção dos nodes mais próximos ----------
+     Objetos pré-criados — preenchidos in-place a cada frame, zero GC. */
+  const distBuf = new Array(NODE_COUNT);
+  for (let i = 0; i < NODE_COUNT; i++) distBuf[i] = { i3: 0, d: 0 };
+
   /* ---------- Cursor tracking (com unproject pra coord world) ---------- */
-  let cursorWorld = new THREE.Vector3(0, 0, 0);
+  const cursorWorld = new THREE.Vector3(0, 0, 0);
   let cursorActive = false;
   const projectVec = new THREE.Vector3();
 
@@ -128,9 +152,8 @@
   const CURSOR_RADIUS = 2.6;
   const CURSOR_RADIUS_SQ = CURSOR_RADIUS * CURSOR_RADIUS;
   const CURSOR_PULL = 0.0035;
-  const MAX_ACTIVE_LINES = 8;
 
-  function animate() {
+  function frame() {
     const pos = pointsGeo.attributes.position.array;
     const hw = world.w * 0.55;
     const hh = world.h * 0.55;
@@ -163,8 +186,8 @@
     }
     pointsGeo.attributes.position.needsUpdate = true;
 
-    // Build passive lines (par a par — N=90 dá ~4k checks, ok)
-    const linePos = [];
+    // Build passive lines — escreve direto no buffer pré-alocado
+    let lp = 0;
     for (let i = 0; i < NODE_COUNT; i++) {
       const i3 = i * 3;
       for (let j = i + 1; j < NODE_COUNT; j++) {
@@ -173,40 +196,93 @@
         const dy = pos[i3 + 1] - pos[j3 + 1];
         const distSq = dx * dx + dy * dy;
         if (distSq < MAX_LINE_DIST_SQ) {
-          linePos.push(pos[i3], pos[i3 + 1], pos[i3 + 2]);
-          linePos.push(pos[j3], pos[j3 + 1], pos[j3 + 2]);
+          linePositions[lp++] = pos[i3];
+          linePositions[lp++] = pos[i3 + 1];
+          linePositions[lp++] = pos[i3 + 2];
+          linePositions[lp++] = pos[j3];
+          linePositions[lp++] = pos[j3 + 1];
+          linePositions[lp++] = pos[j3 + 2];
         }
       }
     }
-    linesGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePos, 3));
+    linesGeo.setDrawRange(0, lp / 3);
+    lineAttr.updateRange.offset = 0;
+    lineAttr.updateRange.count = lp;
+    lineAttr.needsUpdate = true;
 
-    // Build active lines (cursor → N nearest)
-    const activePos = [];
+    // Build active lines (cursor → N nearest) — sem alocação
+    let ap = 0;
     if (cursorActive) {
-      const dists = [];
       for (let i = 0; i < NODE_COUNT; i++) {
         const i3 = i * 3;
         const dx = cursorWorld.x - pos[i3];
         const dy = cursorWorld.y - pos[i3 + 1];
-        dists.push({ i3, d: dx * dx + dy * dy });
+        const slot = distBuf[i];
+        slot.i3 = i3;
+        slot.d = dx * dx + dy * dy;
       }
-      dists.sort((a, b) => a.d - b.d);
-      const max = Math.min(MAX_ACTIVE_LINES, dists.length);
-      for (let k = 0; k < max; k++) {
-        const n = dists[k];
+      distBuf.sort((a, b) => a.d - b.d);
+      for (let k = 0; k < MAX_ACTIVE_LINES; k++) {
+        const n = distBuf[k];
         if (n.d < CURSOR_RADIUS_SQ * 2) {
-          activePos.push(cursorWorld.x, cursorWorld.y, 0);
-          activePos.push(pos[n.i3], pos[n.i3 + 1], pos[n.i3 + 2]);
+          activeLinePositions[ap++] = cursorWorld.x;
+          activeLinePositions[ap++] = cursorWorld.y;
+          activeLinePositions[ap++] = 0;
+          activeLinePositions[ap++] = pos[n.i3];
+          activeLinePositions[ap++] = pos[n.i3 + 1];
+          activeLinePositions[ap++] = pos[n.i3 + 2];
         }
       }
     }
-    activeLinesGeo.setAttribute('position', new THREE.Float32BufferAttribute(activePos, 3));
+    activeLinesGeo.setDrawRange(0, ap / 3);
+    activeAttr.updateRange.offset = 0;
+    activeAttr.updateRange.count = ap;
+    activeAttr.needsUpdate = true;
 
     renderer.render(scene, camera);
-    requestAnimationFrame(animate);
   }
 
-  animate();
+  /* ---------- Loop controlado: pausa fora de vista / aba oculta ---------- */
+  let rafId = null;
+  let running = false;
+  let heroVisible = true;
+
+  function tick() {
+    frame();
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function start() {
+    if (running || !heroVisible || document.hidden) return;
+    running = true;
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function stop() {
+    running = false;
+    if (rafId !== null) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
+    }
+  }
+
+  // Pausa quando o hero rola pra fora da tela (nada visível pra renderizar)
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      heroVisible = entries[0].isIntersecting;
+      if (heroVisible) start();
+      else stop();
+    }, { threshold: 0 });
+    io.observe(hero);
+  }
+
+  // Pausa quando a aba fica em background
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) stop();
+    else start();
+  });
+
+  start();
 
   /* ---------- Resize ---------- */
   let resizeTimeout;
@@ -222,5 +298,5 @@
     }, 100);
   }, { passive: true });
 
-  console.log('[GN7] hero-bg.js v3 — rede de partículas (tech/automação)');
+  console.log('[GN7] hero-bg.js v4 — rede de partículas (otimizado: buffers fixos + pausa fora de vista)');
 })();

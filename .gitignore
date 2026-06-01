@@ -1,0 +1,19 @@
+# ============================================================
+# GN7 — arquivos que NÃO devem ir pro repositório
+# ============================================================
+
+# Vídeos pesados — o site usa só PNG/WebP. O GitHub rejeita
+# arquivos acima de 100MB e um push com eles quebra tudo.
+# (Se um dia precisar versionar um vídeo, force com: git add -f arquivo.mp4)
+*.mov
+*.mp4
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editores
+*.swp
+*~
+.vscode/
